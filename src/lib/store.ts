@@ -651,7 +651,7 @@ export const useAppStore = create<AppState>()(
       },
     }),
     {
-      name: 'etf-dukaan-store',
+      name: 'my-etf-shop-store',
       // Map serialization for localStorage
       storage: {
         getItem: (name) => {

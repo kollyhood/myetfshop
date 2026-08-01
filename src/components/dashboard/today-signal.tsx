@@ -198,8 +198,9 @@ export function TodaySignal() {
 
       {/* Compliance note */}
       <p className="text-[11px] text-muted-foreground text-center px-4">
-        This is a rules output, not investment advice. You execute your own rules with your own
-        capital and your own judgment.
+        My ETF Shop is not a SEBI-registered investment adviser, research analyst, or portfolio
+        manager. This is educational, rules-based tooling — not investment advice or a
+        recommendation. You execute your own rules with your own capital and your own judgment.
       </p>
     </div>
   );

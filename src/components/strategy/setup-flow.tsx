@@ -186,9 +186,10 @@ export function StrategySetupFlow({ onClose }: { onClose?: () => void }) {
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          This is a mechanical rules engine, not investment advice. The rules come from a
-          public strategy description (a popular honest YouTuber's &ldquo;ETF Dukaan — Updated Method 2026&rdquo;).
-          Losses are possible. You execute your own rules with your own capital and your own judgment.
+          My ETF Shop is not a SEBI-registered investment adviser, research analyst, or portfolio
+          manager. This is educational, rules-based tooling — not investment advice or a
+          recommendation. The rules come from a publicly documented ETF rotation strategy. Losses
+          are possible. You execute your own rules with your own capital and your own judgment.
         </AlertDescription>
       </Alert>
 

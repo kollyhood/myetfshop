@@ -290,7 +290,9 @@ export function Settings() {
                 <AlertTitle className="text-destructive">Risk acknowledgement required</AlertTitle>
                 <AlertDescription className="space-y-3 mt-2">
                   <p className="text-sm">
-                    This is a mechanical rule set, not investment advice. Losses are possible.
+                    My ETF Shop is not a SEBI-registered investment adviser, research analyst, or
+                    portfolio manager. This is educational, rules-based tooling — not investment
+                    advice or a recommendation. Losses are possible.
                     Type <code className="bg-muted px-1 py-0.5 rounded">I UNDERSTAND</code> below to
                     sign the acknowledgement.
                   </p>
@@ -456,9 +458,10 @@ export function Settings() {
           <div className="flex gap-2">
             <Shield className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              This app operationalizes a public strategy description. It does not itself constitute
-              investment advice. Users execute their own rules with their own capital and their own
-              judgment — same posture the source material insists on throughout.
+              My ETF Shop is not a SEBI-registered investment adviser, research analyst, or
+              portfolio manager. This is educational, rules-based tooling — not investment advice
+              or a recommendation. Users execute their own rules with their own capital and their
+              own judgment.
             </p>
           </div>
         </CardContent>

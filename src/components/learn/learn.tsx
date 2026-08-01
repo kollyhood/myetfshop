@@ -293,10 +293,9 @@ export function Learn() {
               <div className="flex gap-2">
                 <Shield className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground">
-                  This explainer operationalizes a public strategy description (a popular honest
-                  YouTuber's &ldquo;ETF Dukaan — Updated Method 2026&rdquo;). It does not
-                  constitute investment advice. Users execute their own rules with their own
-                  capital and their own judgment.
+                  This explainer operationalizes a publicly documented ETF rotation strategy. It
+                  does not constitute investment advice. Users execute their own rules with their
+                  own capital and their own judgment.
                 </p>
               </div>
             </CardContent>

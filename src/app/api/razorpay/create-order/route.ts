@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       receipt: `grad_${instanceId.slice(-12)}_${Date.now()}`,
       notes: {
         instanceId,
-        purpose: 'ETF Dukaan graduation fee',
+        purpose: 'My ETF Shop graduation fee',
         ...(userEmail ? { email: userEmail } : {}),
         ...(userName ? { name: userName } : {}),
       },
