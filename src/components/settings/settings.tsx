@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter,
 } from '@/components/ui/card';
@@ -20,6 +21,7 @@ import {
 import {
   Shield, AlertTriangle, Flame, Trophy, Settings as SettingsIcon, User, Database, Trash2,
   CheckCircle2, Link as LinkIcon, Unlink, Zap, Pause, Play, GraduationCap, CreditCard, Lock,
+  LogOut,
 } from 'lucide-react';
 import {
   useAppStore, useActiveInstance, useActiveGraduation, useActiveStreak, useActiveCertificates,
@@ -31,6 +33,7 @@ const GRAD_MIN_DAYS = 30;
 const GRAD_MIN_ROUND_TRIPS = 5;
 
 export function Settings() {
+  const { data: session } = useSession();
   const instance = useActiveInstance();
   const graduation = useActiveGraduation();
   const streak = useActiveStreak();
@@ -103,6 +106,19 @@ export function Settings() {
         <p className="text-xs uppercase tracking-wider text-muted-foreground">More</p>
         <h1 className="text-2xl font-bold tracking-tight mt-1">Settings</h1>
       </div>
+
+      {/* Account */}
+      <Card>
+        <CardContent className="pt-4 pb-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-xs text-muted-foreground">Logged in as</div>
+            <div className="text-sm font-medium truncate">{session?.user?.email}</div>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/login' })}>
+            <LogOut className="h-3.5 w-3.5 mr-1" /> Log out
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Strategy instances */}
       <Card>

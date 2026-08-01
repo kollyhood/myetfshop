@@ -1,32 +1,225 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(cuid())
+  email        String    @unique
+  emailVerified DateTime?
+  username     String?   @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+
+  accounts  Account[]
+  sessions  Session[]
+  instances StrategyInstance[]
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Standard NextAuth (Prisma adapter) tables — required by @next-auth/prisma-adapter
+// even though the Credentials provider itself uses JWT sessions, not DB sessions.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum StrategyMode {
+  paper
+  live
+}
+
+enum StrategyStatus {
+  active
+  paused
+  graduated
+}
+
+model StrategyInstance {
+  id                 String         @id @default(cuid())
+  userId             String
+  name               String
+  mode               StrategyMode   @default(paper)
+  capitalAllocated   Float
+  numParts           Int
+  status             StrategyStatus @default(active)
+  brokerConnected    Boolean        @default(false)
+  acknowledgedRisk   Boolean        @default(false)
+  explainerCompleted Boolean        @default(false)
+  paymentCompleted   Boolean        @default(false)
+  paymentId          String?
+  paymentOrderId     String?
+  paidAt             DateTime?
+  createdAt          DateTime       @default(now())
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positions    Position[]
+  trades       Trade[]
+  trail        TrailEntry[]
+  graduation   GraduationSnapshot?
+  streak       StreakState?
+  certificates Certificate[]
+
+  @@index([userId])
+}
+
+model Position {
+  id                String   @id @default(cuid())
+  instanceId        String
+  symbol            String
+  quantity          Int
+  lastPurchasePrice Float // last fill price, NOT avg cost — used for the -3% averaging-down check
+  avgCostBasis      Float // for P&L reporting and the +4.57% sell target
+  firstPurchaseDate DateTime
+
+  instance StrategyInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@unique([instanceId, symbol])
+  @@index([instanceId])
+}
+
+enum TradeSide {
+  buy
+  sell
+}
+
+enum TriggerReason {
+  rank_5_entry       @map("rank-5-entry")
+  avg_down_3pct      @map("avg-down-3pct")
+  target_hit_4_57pct @map("target-hit-4.57pct")
+}
+
+model Trade {
+  id              String         @id @default(cuid())
+  instanceId      String
+  symbol          String
+  side            TradeSide
+  quantity        Int
+  price           Float
+  notional        Float
+  brokerage       Float
+  stt             Float
+  slippageCost    Float
+  timestamp       DateTime
+  mode            StrategyMode
+  triggerReason   TriggerReason
+  rejected        Boolean        @default(false)
+  rejectionReason String?
+
+  instance StrategyInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@index([instanceId])
+}
+
+enum TrailStage {
+  auth
+  fetch_prices
+  compute_rsi
+  rank
+  evaluate_buy
+  evaluate_sell
+  generate_signal
+  execute
+  log
+}
+
+enum TrailOutcome {
+  ok
+  skipped
+  error
+  no_trade
+}
+
+model TrailEntry {
+  id         String       @id @default(cuid())
+  instanceId String
+  date       String // trading date, YYYY-MM-DD
+  stage      TrailStage
+  outcome    TrailOutcome
+  payload    Json
+  error      String?
+  timestamp  DateTime
+
+  instance StrategyInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@index([instanceId])
+}
+
+model GraduationSnapshot {
+  instanceId           String   @id
+  daysElapsed          Int      @default(0)
+  roundTripsCompleted  Int      @default(0)
+  currentDrawdown      Float    @default(0)
+  maxDrawdownTolerated Float?
+  acknowledged         Boolean  @default(false)
+  explainerCompleted   Boolean  @default(false)
+  lastUpdated          DateTime @default(now())
+
+  instance StrategyInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+}
+
+model StreakState {
+  instanceId       String   @id
+  currentStreak    Int      @default(0)
+  longestStreak    Int      @default(0)
+  lastReviewedDate String?
+  reviewHistory    Json     @default("[]")
+
+  instance StrategyInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+}
+
+enum CertificateType {
+  learn_completed
+  first_round_trip
+  day_30_milestone
+  graduated_to_live
+}
+
+model Certificate {
+  id         String          @id @default(cuid())
+  instanceId String
+  type       CertificateType
+  title      String
+  issuedAt   DateTime        @default(now())
+
+  instance StrategyInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@index([instanceId])
 }
