@@ -143,6 +143,7 @@ export function PaymentModal({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                  instanceId,
                   razorpay_order_id: data.orderId,
                   razorpay_payment_id: fakePaymentId,
                   razorpay_signature: 'demo_signature',
@@ -192,6 +193,7 @@ export function PaymentModal({
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
+                instanceId,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,

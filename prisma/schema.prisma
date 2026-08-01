@@ -89,6 +89,11 @@ model StrategyInstance {
   paidAt             DateTime?
   createdAt          DateTime       @default(now())
 
+  // Cursor into the deterministic mock-Shoonya price feed (see src/lib/strategy/mock-shoonya.ts).
+  // Price history itself is never persisted — it's regenerated on demand from this date.
+  // Null until the first daily cycle runs for this instance.
+  priceAsOfDate      String?
+
   user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   positions    Position[]
   trades       Trade[]
@@ -120,12 +125,6 @@ enum TradeSide {
   sell
 }
 
-enum TriggerReason {
-  rank_5_entry       @map("rank-5-entry")
-  avg_down_3pct      @map("avg-down-3pct")
-  target_hit_4_57pct @map("target-hit-4.57pct")
-}
-
 model Trade {
   id              String         @id @default(cuid())
   instanceId      String
@@ -139,7 +138,7 @@ model Trade {
   slippageCost    Float
   timestamp       DateTime
   mode            StrategyMode
-  triggerReason   TriggerReason
+  triggerReason   String // 'rank-5-entry' | 'avg-down-3pct' | 'target-hit-4.57pct' — see TriggerReason in src/lib/types.ts
   rejected        Boolean        @default(false)
   rejectionReason String?
 

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
+import { getSessionUserId } from '@/lib/session';
+import { getOwnedInstance } from '@/lib/server/ownership';
 
 /**
  * Creates a Razorpay order for the one-time graduation fee (Rs. 299).
@@ -20,6 +22,9 @@ const GRADUATION_FEE_PAISE = 299 * 100; // Rs. 299 in paise
 
 export async function POST(req: Request) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const body = await req.json().catch(() => ({}));
     const instanceId = body?.instanceId as string | undefined;
     const userEmail = body?.email as string | undefined;
@@ -30,6 +35,11 @@ export async function POST(req: Request) {
         { error: 'instanceId is required' },
         { status: 400 }
       );
+    }
+
+    const instance = await getOwnedInstance(instanceId, userId);
+    if (!instance) {
+      return NextResponse.json({ error: 'Strategy instance not found' }, { status: 404 });
     }
 
     const keyId = process.env.RAZORPAY_KEY_ID;
